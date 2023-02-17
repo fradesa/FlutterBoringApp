@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:boring_app/boring_drawer_tile_style.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,13 +8,15 @@ class BoringDrawerEntry extends StatelessWidget {
   final String label;
   final Icon? icon;
   final List<BoringDrawerEntry>? subEntries;
-  BoringDrawerEntry({
-    super.key,
-    required this.path,
-    required this.label,
-    this.icon,
-    this.subEntries,
-  });
+  final BoringDrawerTileStyle drawerTileStyle;
+
+  BoringDrawerEntry(
+      {super.key,
+      required this.path,
+      required this.label,
+      this.icon,
+      this.subEntries,
+      this.drawerTileStyle = const BoringDrawerTileStyle()});
 
   bool get _hasSubentries => subEntries != null && subEntries!.isNotEmpty;
 
@@ -23,24 +26,47 @@ class BoringDrawerEntry extends StatelessWidget {
         (!_hasSubentries && path != "/" && loc.contains(path));
   }
 
-  final Color selectedColor = Colors.green;
   late final Color textColor =
-      selectedColor.computeLuminance() > 0.5 ? Colors.black : Colors.white;
+      drawerTileStyle.selectedColor.computeLuminance() > 0.5
+          ? Colors.black
+          : Colors.white;
+  Color _textColor(BuildContext context) {
+    return Theme.of(context).textTheme.bodyLarge!.color!;
+  }
+
+  Color _unselectedTextColor(BuildContext context) {
+    return Theme.of(context).unselectedWidgetColor;
+  }
 
   Widget tile(BuildContext context) {
     //if (entry.subEntries == null || entry.subEntries!.isEmpty) {
     final isSelected = checkIfSelected(context);
-    return ListTile(
-      leading: icon,
-      title: Text(label),
-      textColor: isSelected ? (textColor) : null,
-      iconColor: isSelected ? (textColor) : null,
-      hoverColor:
-          isSelected ? Colors.transparent : selectedColor.withAlpha(150),
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadiusDirectional.all(Radius.circular(12))),
-      onTap: () => GoRouter.of(context).push(path),
-      //selected: isSelected,
+    return Column(
+      children: [
+        ListTile(
+          leading: icon,
+          title: Text(label, style: drawerTileStyle.labelTextStlye),
+          textColor: isSelected
+              ? drawerTileStyle.selectedTextColor ?? (_textColor(context))
+              : drawerTileStyle.unSelectedTextColor ??
+                  _unselectedTextColor(context),
+          iconColor: isSelected
+              ? drawerTileStyle.selectedTextColor ?? (_textColor(context))
+              : drawerTileStyle.unSelectedTextColor ??
+                  _unselectedTextColor(context),
+
+          hoverColor: isSelected
+              ? Colors.transparent
+              : drawerTileStyle.selectedColor.withAlpha(150),
+          shape:
+              RoundedRectangleBorder(borderRadius: drawerTileStyle.tileRadius),
+          onTap: () => GoRouter.of(context).push(path),
+          //selected: isSelected,
+        ),
+        SizedBox(
+          height: drawerTileStyle.tileSpacing,
+        )
+      ],
     );
   }
 
@@ -50,19 +76,18 @@ class BoringDrawerEntry extends StatelessWidget {
     return Stack(
       alignment: Alignment.topLeft,
       children: [
+        // @fradesa A cosa serve questo hero?
         Hero(
           tag: "tag",
           child: ClipRRect(
-            borderRadius: const BorderRadius.all(
-              Radius.circular(12.0),
-            ),
+            borderRadius: drawerTileStyle.tileRadius,
             child: SizedBox(
               height: 48,
-              child: Container(color: selectedColor),
+              child: Container(color: drawerTileStyle.selectedColor),
             ),
           ),
         ),
-        tile(context)
+        tile(context),
       ],
     );
   }

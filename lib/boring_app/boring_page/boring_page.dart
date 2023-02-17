@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:boring_app/boring_app/boring_drawer_entry.dart';
 import 'package:boring_app/boring_app/boring_page/boring_page_base.dart';
+import 'package:boring_app/boring_drawer_tile_style.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,6 +15,7 @@ class BoringPage implements BoringPageBase {
   List<BoringPage>? subPages;
   bool hideFromDrawer;
   bool showChildrenInDrawer;
+  BoringDrawerTileStyle? tileStyle;
   Widget Function(BuildContext, GoRouterState)? builder;
   FutureOr<String?> Function(BuildContext, GoRouterState)? redirect;
 
@@ -25,33 +27,41 @@ class BoringPage implements BoringPageBase {
       this.hideFromDrawer = false,
       this.showChildrenInDrawer = false,
       this.builder,
+      this.tileStyle,
       this.redirect})
       : assert(!hideFromDrawer || drawerLabel.isEmpty,
             "The page is hidden from the drawer so the drawerLabel must be empty! PATH: $path");
 
-  List<BoringDrawerEntry>? _subDrawerEntries(String fullPathPrefix) =>
+  List<BoringDrawerEntry>? _subDrawerEntries(
+          String fullPathPrefix, BoringDrawerTileStyle defaultStyle) =>
       showChildrenInDrawer
           ? subPages
-              ?.map((e) => e.boringDrawerEntry(fullPathPrefix))
+              ?.map((e) => e.boringDrawerEntry(fullPathPrefix, defaultStyle))
               .where((element) => element != null)
               .toList() as List<BoringDrawerEntry>
           : null;
 
-  BoringDrawerEntry? boringDrawerEntry(String fullPathPrefix) => !hideFromDrawer
-      ? BoringDrawerEntry(
-          path: "$fullPathPrefix/$path",
-          label: drawerLabel,
-          subEntries: _subDrawerEntries("$fullPathPrefix/$path"),
-          icon: icon)
-      : null;
+  BoringDrawerEntry? boringDrawerEntry(
+          String fullPathPrefix, BoringDrawerTileStyle defaultStyle) =>
+      !hideFromDrawer
+          ? BoringDrawerEntry(
+              path: "$fullPathPrefix/$path",
+              label: drawerLabel,
+              drawerTileStyle: tileStyle ?? defaultStyle,
+              subEntries:
+                  _subDrawerEntries("$fullPathPrefix/$path", defaultStyle),
+              icon: icon)
+          : null;
 
   // @override
   // List<BoringEntry> get getDrawerEntries =>
   //     !hideFromDrawer ? [_boringEntry as BoringEntry] : [];
 
   @override
-  Widget? buildDrawerEntry(BuildContext context, [String fullPathPrefix = ""]) {
-    return boringDrawerEntry(fullPathPrefix);
+  Widget? buildDrawerEntry(
+      BuildContext context, BoringDrawerTileStyle defaultStyle,
+      [String fullPathPrefix = ""]) {
+    return boringDrawerEntry(fullPathPrefix, defaultStyle);
   }
 
   @override

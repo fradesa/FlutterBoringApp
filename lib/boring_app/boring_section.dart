@@ -2,6 +2,8 @@
 import 'dart:async';
 
 import 'package:boring_app/boring_app/boring_page/boring_page.dart';
+import 'package:boring_app/boring_drawer_style.dart';
+import 'package:boring_app/boring_drawer_tile_style.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,6 +15,8 @@ class BoringSection {
   final Widget Function(BuildContext context)? drawerHeaderBuilder;
   final Widget Function(BuildContext context)? drawerFooterBuilder;
   final String? defaultPath;
+  final BoringDrawerTileStyle defaultDrawerTileStyle;
+  final BoringDrawerStlye drawerStlye;
   final FutureOr<String?> Function(BuildContext context, GoRouterState state)?
       redirect;
   BoringSection({
@@ -22,6 +26,8 @@ class BoringSection {
     this.drawerFooterBuilder,
     this.defaultPath,
     this.redirect,
+    this.drawerStlye = const BoringDrawerStlye(),
+    this.defaultDrawerTileStyle = const BoringDrawerTileStyle(),
   }) {
     _assertions();
   }
@@ -59,37 +65,41 @@ class BoringSection {
 
   late final BoringPage? noPathPage;
 
-  final drawerShape =
-      RoundedRectangleBorder(borderRadius: BorderRadius.circular(16));
+  // final drawerShape =
+  //     RoundedRectangleBorder(borderRadius: drawerStlye.drawerRadius);
   final drawerElevation = 20.0;
   drawerWrap(Widget child) => Card(
         margin: EdgeInsets.zero,
         elevation: 0,
         clipBehavior: Clip.hardEdge,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: drawerStlye.drawerRadius),
+        color: drawerStlye.backgroundColor,
         child: child,
       );
 
   Drawer drawer(BuildContext context) => Drawer(
-        shape: drawerShape,
+        shape: RoundedRectangleBorder(borderRadius: drawerStlye.drawerRadius),
         elevation: drawerElevation,
-        child: drawerWrap(Column(
-          children: [
-            if (drawerHeaderBuilder != null) drawerHeaderBuilder!(context),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: children
-                      .map((e) =>
-                          e.buildDrawerEntry(context, hasPath ? path! : ""))
-                      .whereType<Widget>()
-                      .toList(),
+        child: drawerWrap(Padding(
+          padding: drawerStlye.padding,
+          child: Column(
+            children: [
+              if (drawerHeaderBuilder != null) drawerHeaderBuilder!(context),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: children
+                        .map((e) => e.buildDrawerEntry(context,
+                            defaultDrawerTileStyle, hasPath ? path! : ""))
+                        .whereType<Widget>()
+                        .toList(),
+                  ),
                 ),
               ),
-            ),
-            if (drawerFooterBuilder != null) drawerFooterBuilder!(context),
-          ],
+              if (drawerFooterBuilder != null) drawerFooterBuilder!(context),
+            ],
+          ),
         )),
       );
 
