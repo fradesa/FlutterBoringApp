@@ -57,7 +57,7 @@ class BoringApp extends StatelessWidget {
 
   get getRootRoutes => sections
       .where((element) => !element.hasPath)
-      .map((e) => e.subRoutes())
+      .map((e) => e.subRoutes(gKey: _rootNavigator))
       .expand((element) => element)
       .toList();
 
@@ -94,6 +94,7 @@ class BoringApp extends StatelessWidget {
       // routeInformationParser: _goRouter.routeInformationParser,
       // routeInformationProvider: _goRouter.routeInformationProvider,
       // routerDelegate: _goRouter.routerDelegate,
+
       localizationsDelegates: localizationsDelegates,
       supportedLocales: supportedLocales,
       locale: locale,

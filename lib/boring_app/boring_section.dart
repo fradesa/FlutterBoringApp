@@ -111,53 +111,50 @@ class BoringSection {
         ));
   }
 
-  List<RouteBase> _getChildrenRoutes(bool hiddenFromDrawer) => children
+  List<RouteBase> _getChildrenRoutes(bool hiddenFromDrawer, {GlobalKey<NavigatorState>? gKey}) => children
       .where((element) =>
           element.isHiddenFromDrawer == hiddenFromDrawer ||
           element.maintainDrawer)
-      .map((e) => e.getRoutes(addPrefix: !hasPath, redirectInjection: redirect))
+      .map((e) => e.getRoutes(addPrefix: !hasPath, redirectInjection: redirect, gKey: gKey))
       .expand((element) => element)
       .toList();
 
   List<ShellRoute> _shellRoute() {
     //print(children);
-    final subRoutes = _getChildrenRoutes(false);
+    final subRoutes = _getChildrenRoutes(false, gKey: _shellController);
     //print(subRoutes);
     if (subRoutes.isEmpty) return [];
     return [
       ShellRoute(
           navigatorKey: _shellController,
           builder: (context, state, child) {
-            return HeroControllerScope(
-              controller: MaterialApp.createMaterialHeroController(),
-              child: LayoutBuilder(builder: (context, constraints) {
-                return Scaffold(
-                  key: _drawerKey,
-                  drawer: constraints.maxWidth > 750
-                      ? null
-                      : drawer(context, isMobile: true),
-                  body: constraints.maxWidth > 750
-                      ? Padding(
-                          padding: drawerStyle.drawerForeignPadding,
-                          child: Row(children: [
-                            drawer(context),
-                            SizedBox(
-                              width: drawerAndPageSpacing,
-                            ),
-                            Expanded(child: child)
-                          ]),
-                        )
-                      : child,
-                );
-              }),
-            );
+            return LayoutBuilder(builder: (context, constraints) {
+              return Scaffold(
+                key: _drawerKey,
+                drawer: constraints.maxWidth > 750
+                    ? null
+                    : drawer(context, isMobile: true),
+                body: constraints.maxWidth > 750
+                    ? Padding(
+                        padding: drawerStyle.drawerForeignPadding,
+                        child: Row(children: [
+                          drawer(context),
+                          SizedBox(
+                            width: drawerAndPageSpacing,
+                          ),
+                          Expanded(child: child)
+                        ]),
+                      )
+                    : child,
+              );
+            });
           },
           routes: subRoutes)
     ];
   }
 
-  List<RouteBase> subRoutes() =>
-      [..._shellRoute(), ..._getChildrenRoutes(true)];
+  List<RouteBase> subRoutes({GlobalKey<NavigatorState>? gKey}) =>
+      [..._shellRoute(), ..._getChildrenRoutes(true, gKey: gKey)];
 
   bool get hasPath => path != null && path!.isNotEmpty;
 

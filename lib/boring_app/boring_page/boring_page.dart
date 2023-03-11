@@ -79,25 +79,25 @@ class BoringPage implements BoringPageBase {
   List<GoRoute> getRoutes(
       {bool addPrefix = false,
       FutureOr<String?> Function(BuildContext context, GoRouterState state)?
-          redirectInjection}) {
+          redirectInjection,  GlobalKey<NavigatorState>? gKey}) {
     return [
       if (addPrefix || path.isNotEmpty)
         GoRoute(
+
             path: addPrefix ? "/$path" : path,
             redirect: (context, state) =>
                 redirectInjection?.call(context, state) ??
                 redirect?.call(context, state),
-            routes: _getSubRoutes(subPages),
-            pageBuilder: builder != null
-                ? (context, state) =>
-                    NoTransitionPage(child: builder!(context, state))
-                : null)
+            routes: _getSubRoutes(subPages, gKey: gKey),
+            parentNavigatorKey: gKey,
+builder: builder,
+       )
     ];
   }
 
-  List<RouteBase> _getSubRoutes(List<BoringPage>? subPages) =>
+  List<RouteBase> _getSubRoutes(List<BoringPage>? subPages, {GlobalKey<NavigatorState>? gKey}) =>
       subPages
-          ?.map((route) => route.getRoutes())
+          ?.map((route) => route.getRoutes(gKey: gKey))
           .expand((element) => element)
           .toList() ??
       [];

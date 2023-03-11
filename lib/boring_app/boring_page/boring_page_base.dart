@@ -13,10 +13,11 @@ abstract class BoringPageBase {
   bool get isHiddenFromDrawer;
   bool get maintainDrawer;
 
+
   List<GoRoute> getRoutes(
       {bool addPrefix = false,
       FutureOr<String?> Function(BuildContext context, GoRouterState state)?
-          redirectInjection});
+          redirectInjection, required GlobalKey<NavigatorState>? gKey});
 
   List<BoringPage> getPagesWithEmptyPath();
 }
